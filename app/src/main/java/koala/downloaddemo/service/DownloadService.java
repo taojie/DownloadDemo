@@ -27,8 +27,10 @@ public class DownloadService extends Service {
     public static final String DOWNLOAD_DIR = Environment.getExternalStorageDirectory() + "/download";
     public static final String ACTION_START = "ACTION_START";
     public static final String ACTON_STOP = "ACTON_STOP";
+    public static final String ACTON_UPDATE = "ACTON_UPDATE";
     public static final int MSG_INIT = 1;
     private FileInfo fileInfo = null;
+    private DownloadTask downloadTask = null;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if(intent.getAction().equals(ACTION_START)){
@@ -38,6 +40,9 @@ public class DownloadService extends Service {
         }else if(intent.getAction().equals(ACTON_STOP)){
             fileInfo = (FileInfo) intent.getSerializableExtra("file_info");
             Log.i("koala",fileInfo.toString());
+            if(downloadTask != null){
+                downloadTask.isPause = true;
+            }
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -54,6 +59,8 @@ public class DownloadService extends Service {
                 case MSG_INIT:
                     FileInfo fileInfo = (FileInfo) msg.obj;
                     Log.i("koala",fileInfo.toString());
+                    downloadTask = new DownloadTask(fileInfo,DownloadService.this);
+                    downloadTask.download();
                      break;
             }
             super.handleMessage(msg);
